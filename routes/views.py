@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from .forms import UserForm, LoginForm, CreateRouteForm
+from .forms import UserForm, LoginForm, CreateRouteForm, UpdateRouteForm
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import View
 from .models import Route, Location, Drone
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
+from datetime import datetime
+from django.utils import timezone
+from decimal import Decimal
 
 def welcome(request):
     r = request
@@ -18,8 +20,9 @@ def welcome(request):
 @login_required()
 def routes(request):
     user = User.objects.filter(username=request.user.username)
-    all_routes = Route.objects.filter(customer=user)
-    return render(request, 'routes.html', {'all_routes': all_routes})
+    future_routes = Route.objects.filter(customer=user, time__gt=timezone.now()).order_by('time')
+    past_routes = Route.objects.filter(customer=user, time__lte=timezone.now()).order_by('-time')
+    return render(request, 'routes.html', {'future_routes': future_routes, 'past_routes': past_routes})
 
 @login_required
 def logout_user(request):
@@ -76,8 +79,17 @@ class LoginView(View):
 
 def detail(request, route_id):
     route = get_object_or_404(Route, pk=route_id)
-    return render(request, "detail.html", {"route": route})
+    is_future = None
+    if(route.time > timezone.now()):
+        is_future = True
+    return render(request, "detail.html", {"route": route, 'is_future':is_future})
 
+
+def delete(request, route_id):
+    Route.objects.filter(id = route_id).delete()
+    user = User.objects.filter(username=request.user.username)
+    all_routes = Route.objects.filter(customer=user)
+    return render(request, 'routes.html', {'all_routes': all_routes})
 
 class CreateRouteFormView(View):
     form_class = CreateRouteForm
@@ -91,6 +103,103 @@ class CreateRouteFormView(View):
         form = self.form_class(request.POST)
 
         if form.is_valid():
-            pass
+            l_t = form.data['load_title']
+            l_w = Decimal(form.data['load_weight'])
+            cust = User.objects.filter(username=request.user.username)[0]
+            dt = datetime.strptime(form.data['time'], '%H:%M %d.%m.%Y')
+            dist = int(form.data['distance'])
+            pr = Decimal(form.data['price'])
+            drs = Drone.objects.all()
+            dr = None
+            diff = Decimal(10000)
+            for drone in drs:
+                if drone.add_weight > l_w and drone.add_weight - l_w < diff:
+                    dr = drone
 
-        return render(request, self.template_name, {'form': form})
+
+            # drone
+            sp = form.data['start_point'].split('&')
+            ep = form.data['end_point'].split('&')
+
+            if (dr == None):
+                return render(request, self.template_name,
+                              {'form': form, 'error_message': 'Your load is too heavy to handle it',
+                               'start_lat': float(sp[1]), 'start_lng': float(sp[2]),
+                               'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
+
+            s_l = Location(title=sp[0], latitude=float(sp[1]), longitude=float(sp[2]))
+            s_l.save()
+            e_l = Location(title=ep[0], latitude=float(ep[1]), longitude=float(ep[2]))
+            e_l.save()
+
+            new_route = Route(load_title=l_t, load_weight=l_w, drone=dr, customer=cust, time=dt, distance=dist, start_point=s_l, end_point=e_l, price=pr)
+            new_route.save()
+
+            return redirect('routes:routes')
+
+        sp = form.data['start_point'].split('&')
+        ep = form.data['end_point'].split('&')
+        return render(request, self.template_name, {'form': form, 'start_lat': float(sp[1]), 'start_lng': float(sp[2]), 'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
+
+
+class UpdateRouteFormView(View):
+    form_class = UpdateRouteForm
+    template_name = 'update_route.html'
+
+    def get(self, request, route_id):
+        route = Route.objects.filter(id=route_id)[0]
+        form = self.form_class(initial={'load_title': route.load_title, 'load_weight': route.load_weight, 'time': route.time})
+        return render(request, self.template_name, {'form': form, 'start_lat': route.start_point.latitude, 'start_lng': route.start_point.longitude,
+                                                    'end_lat': route.end_point.latitude, 'end_lng': route.end_point.longitude})
+
+    def post(self, request, route_id):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            l_t = form.data['load_title']
+            l_w = Decimal(form.data['load_weight'])
+            dt = datetime.strptime(form.data['time'], '%H:%M %d.%m.%Y')
+            dist = int(form.data['distance'])
+            pr = Decimal(form.data['price'])
+            drs = Drone.objects.all()
+            dr = None
+            diff = Decimal(10000)
+            for drone in drs:
+                if drone.add_weight > l_w and drone.add_weight - l_w < diff:
+                    dr = drone
+
+            sp = form.data['start_point'].split('&')
+            ep = form.data['end_point'].split('&')
+
+            if (dr == None):
+                return render(request, self.template_name,
+                              {'form': form, 'error_message': 'Your load is too heavy to handle it',
+                               'start_lat': float(sp[1]), 'start_lng': float(sp[2]),
+                               'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
+
+            route = Route.objects.filter(id=route_id)[0]
+            s_l = route.start_point
+            s_l.title = sp[0]
+            s_l.latitude = float(sp[1])
+            s_l.longitude = float(sp[2])
+            s_l.save()
+            e_l = Route.objects.filter(id=route_id)[0].end_point
+            e_l.title = ep[0]
+            e_l.latitude = float(ep[1])
+            e_l.longitude = float(ep[2])
+            e_l.save()
+
+            route.load_title = l_t
+            route.load_weight = l_w
+            route.drone = dr
+            route.time = dt
+            route.distance = dist
+            route.price = pr
+            route.save()
+
+            return redirect('routes:routes')
+
+        sp = form.data['start_point'].split('&')
+        ep = form.data['end_point'].split('&')
+        return render(request, self.template_name, {'form': form, 'start_lat': float(sp[1]), 'start_lng': float(sp[2]), 'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
+
