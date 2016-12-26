@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Route Details{% endblock %}
+
+{% block body %}
+
+{% if error_message %}
+    <p><strong>{{ error_message }}</strong></p>
+{% endif %}
+
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+        <span class="text-danger small">{{ form.load_title.errors }}</span>
+    </div>
+    <label class="control-label col-sm-2">{{ form.load_title.label_tag }}</label>
+    <div class="col-sm-10">{{ form.load_title }}</div>
+</div>
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+        <span class="text-danger small">{{ form.load_weight.errors }}</span>
+    </div>
+    <label class="control-label col-sm-2">{{ form.load_weight.label_tag }}</label>
+    <div class="col-sm-10">{{ form.load_weight }}</div>
+</div>
+<div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+        <span class="text-danger small">{{ form.time.errors }}</span>
+    </div>
+    <label class="control-label col-sm-2">{{ form.time.label_tag }}</label>
+    <div class="col-sm-10">{{ form.time }}</div>
+</div>
+<div>hello</div>
+<div>hello</div>
+<div>hello</div>
+<div>hello</div>
+
+
+{% endblock %}

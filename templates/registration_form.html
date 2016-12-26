@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    {% load staticfiles %}
+    <link href="http://fonts.googleapis.com/css?family=Satisfy" rel="stylesheet" type="text/css"/>
+    <link href="{% static "bootstrap/dist/css/bootstrap.css" %}" rel="stylesheet" type="text/css">
+    <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
+    <link href="{% static 'background.css' %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "bootstrap/dist/js/bootstrap.min.js" %}"></script>
+</head>
+<body>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12 col-md-7">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    {% if error_message %}
+                        <p><strong>{{ error_message }}</strong></p>
+                    {% endif %}
+                    <form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <span class="text-danger small">{{ field.errors }}</span>
+                                </div>
+                                <label class="control-label col-sm-2">{{ field.label_tag }}</label>
+                                <div class="col-sm-10">{{ field }}</div>
+                            </div>
+                        {% endfor %}
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-success">Register</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

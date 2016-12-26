@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dronesfer</title>
+    {% load staticfiles %}
+    <link href="http://fonts.googleapis.com/css?family=Satisfy" rel="stylesheet" type="text/css"/>
+    <link href="{% static "bootstrap/dist/css/bootstrap.css" %}" rel="stylesheet" type="text/css">
+    <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
+    <link href="{% static 'background.css' %}" rel="stylesheet" type="text/css" />
+    <script src="{% static "bootstrap/dist/js/bootstrap.min.js" %}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <h1>Dronesfer</h1>
+                <p>Here you can do smth</p>
+            </div>
+        </div>
+        <a href="{% url 'register' %}">
+        <button type="button" class="btn btn-default btn-lg">
+          <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Register
+        </button>
+        </a>
+        <a href="{% url 'login' %}">
+        <button type="button" class="btn btn-default btn-lg">
+          <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Login
+        </button>
+        </a>
+    </div>
+</body>
+</html>

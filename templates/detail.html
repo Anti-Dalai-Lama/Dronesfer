@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Route Details{% endblock %}
+
+{% block body %}
+
+{% if error_message %}
+    <p><strong>{{ error_message }}</strong></p>
+{% endif %}
+
+<ul>
+    <li>{{ route.load_title }}</li>
+    <li>{{ route.load_weight }}</li>
+    <li>{{ route.drone }}</li>
+    <li>{{ route.customer }}</li>
+    <li>{{ route.time |date:'h:i d.m.y' }}</li>
+    <li>{{ route.distance }}</li>
+    <li>{{ route.start_point }}</li>
+    <li>{{ route.end_point }}</li>
+</ul>
+
+<div id="map" class="g-map"></div>
+
+<script>
+function initMap() {
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer;
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 7,
+    center: {lat: 41.85, lng: -87.65}
+  });
+    var start = { lat: parseFloat("{{ route.start_point.latitude }}"), lng: parseFloat("{{ route.start_point.longitude }}") };
+    var end = { lat: parseFloat("{{ route.end_point.latitude }}"), lng: parseFloat("{{ route.end_point.longitude }}") };
+  directionsDisplay.setMap(map);
+    directionsService.route({
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+  }, function(response, status) {
+        if (status === google.maps.DirectionsStatus.OK) {
+            console.log(response.routes[0].legs[0].distance.value);
+            console.log(response.routes[0].legs[0].start_address);
+            console.log(response.routes[0].legs[0].end_address);
+          directionsDisplay.setDirections(response);
+
+        } else {
+          window.alert('Directions request failed due to ' + status);
+        }
+  });
+
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyChIZXk87ZHoiyKUOyU7wkD3Q-LTlENuh8&signed_in=true&callback=initMap"
+    async defer></script>
+
+{% endblock %}
