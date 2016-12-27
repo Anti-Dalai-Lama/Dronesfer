@@ -6,9 +6,10 @@ from django.views.generic import View
 from .models import Route, Location, Drone
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from decimal import Decimal
+import pytz
 
 def welcome(request):
     r = request
@@ -87,9 +88,7 @@ def detail(request, route_id):
 
 def delete(request, route_id):
     Route.objects.filter(id = route_id).delete()
-    user = User.objects.filter(username=request.user.username)
-    all_routes = Route.objects.filter(customer=user)
-    return render(request, 'routes.html', {'all_routes': all_routes})
+    return routes(request)
 
 class CreateRouteFormView(View):
     form_class = CreateRouteForm
@@ -113,17 +112,27 @@ class CreateRouteFormView(View):
             dr = None
             diff = Decimal(10000)
             for drone in drs:
-                if drone.add_weight > l_w and drone.add_weight - l_w < diff:
+                if drone.add_weight >= l_w and drone.add_weight - l_w < diff:
                     dr = drone
+                    diff = drone.add_weight - l_w
 
 
             # drone
             sp = form.data['start_point'].split('&')
             ep = form.data['end_point'].split('&')
 
-            if (dr == None):
+            error_text = None
+            comp_dt = pytz.timezone(timezone.get_default_timezone_name()).localize(dt)
+
+            if comp_dt < (timezone.now() + timedelta(minutes=45)):
+                error_text = "We can't do it so early"
+
+            if dr == None:
+                error_text = "Your load is too heavy to handle it"
+
+            if error_text != None:
                 return render(request, self.template_name,
-                              {'form': form, 'error_message': 'Your load is too heavy to handle it',
+                              {'form': form, 'error_message': error_text,
                                'start_lat': float(sp[1]), 'start_lng': float(sp[2]),
                                'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
 
@@ -132,7 +141,10 @@ class CreateRouteFormView(View):
             e_l = Location(title=ep[0], latitude=float(ep[1]), longitude=float(ep[2]))
             e_l.save()
 
-            new_route = Route(load_title=l_t, load_weight=l_w, drone=dr, customer=cust, time=dt, distance=dist, start_point=s_l, end_point=e_l, price=pr)
+            delta = int(dist/dr.speed)
+            end_t = dt + timedelta(seconds=delta)
+
+            new_route = Route(load_title=l_t, load_weight=l_w, drone=dr, customer=cust, time=dt, end_time=end_t, distance=dist, start_point=s_l, end_point=e_l, price=pr)
             new_route.save()
 
             return redirect('routes:routes')
@@ -159,21 +171,32 @@ class UpdateRouteFormView(View):
             l_t = form.data['load_title']
             l_w = Decimal(form.data['load_weight'])
             dt = datetime.strptime(form.data['time'], '%H:%M %d.%m.%Y')
+
+
             dist = int(form.data['distance'])
             pr = Decimal(form.data['price'])
             drs = Drone.objects.all()
             dr = None
             diff = Decimal(10000)
             for drone in drs:
-                if drone.add_weight > l_w and drone.add_weight - l_w < diff:
+                if drone.add_weight >= l_w and drone.add_weight - l_w < diff:
                     dr = drone
+                    diff = drone.add_weight - l_w
 
             sp = form.data['start_point'].split('&')
             ep = form.data['end_point'].split('&')
 
-            if (dr == None):
+            error_text = None
+            comp_dt = pytz.timezone(timezone.get_default_timezone_name()).localize(dt)
+            if comp_dt < (timezone.now() + timedelta(minutes=45)):
+                error_text = "We can't do it so early"
+
+            if dr == None:
+                error_text = "Your load is too heavy to handle it"
+
+            if error_text != None:
                 return render(request, self.template_name,
-                              {'form': form, 'error_message': 'Your load is too heavy to handle it',
+                              {'form': form, 'error_message': error_text,
                                'start_lat': float(sp[1]), 'start_lng': float(sp[2]),
                                'end_lat': float(ep[1]), 'end_lng': float(ep[2])})
 
@@ -189,10 +212,14 @@ class UpdateRouteFormView(View):
             e_l.longitude = float(ep[2])
             e_l.save()
 
+            delta = int(dist / dr.speed)
+            end_t = dt + timedelta(seconds=delta)
+
             route.load_title = l_t
             route.load_weight = l_w
             route.drone = dr
             route.time = dt
+            route.end_time = end_t
             route.distance = dist
             route.price = pr
             route.save()

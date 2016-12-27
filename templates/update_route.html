@@ -3,78 +3,77 @@
 
 {% block body %}
 
+<div class="row">
 <form class="form-horizontal" action="" method="post" enctype="multipart/form-data">
 {% csrf_token %}
+<div class="col-md-4 col-md-offset-2">
 <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
         <span class="text-danger small">{{ form.load_title.errors }}</span>
     </div>
-    <label class="control-label col-sm-2">{{ form.load_title.label_tag }}</label>
-    <div class="col-sm-10">{{ form.load_title }}</div>
+    <label class="control-label col-sm-6">{{ form.load_title.label_tag }}</label>
+    <div class="col-sm-6">{{ form.load_title }}</div>
 </div>
 <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
         <span class="text-danger small">{{ form.load_weight.errors }}</span>
     </div>
-    <label class="control-label col-sm-2">{{ form.load_weight.label_tag }}</label>
-    <div class="col-sm-10">{{ form.load_weight }}</div>
+    <label class="control-label col-sm-6">{{ form.load_weight.label_tag }} (kg)</label>
+    <div class="col-sm-6">{{ form.load_weight }}</div>
 </div>
 <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
         <span class="text-danger small">{{ form.time.errors }}</span>
     </div>
-    <label class="control-label col-sm-2">Time and date</label>
-    <div class="col-sm-10">{{ form.time }}</div>
+    <label class="control-label col-sm-6">Time and date:</label>
+    <div class="col-sm-6">{{ form.time }}</div>
 </div>
+</div>
+<div id="map" class="g-map col-md-4"></div>
 
 <input type="hidden" id="start_point_input" name="start_point" value="">
 <input type="hidden" id="end_point_input" name="end_point" value="">
 <input type="hidden" id="distance_input" name="distance" value="">
 <input type="hidden" id="price_input" name="price" value="">
 
-<div id="map" class="g-map"></div>
-
-<button type="button" id="clear_button" class="btn btn-default btn-lg" onclick="clearMap()">
-  Clear
-</button>
+<div class="col-md-4 col-md-offset-4">
+    <div class="col-md-2 col-md-offset-10">
+        <button type="button" id="clear_button" class="btn btn-default btn-lg" onclick="clearMap()">
+          Clear
+        </button>
+    </div>
 
 <div class="form-group" id="start_point_row">
-    <div class="col-sm-offset-2 col-sm-10">
-        <span class="text-danger small">{{ start_point_errors }}</span>
-    </div>
-    <label class="control-label col-sm-2">Start point: </label>
-    <div class="col-sm-10" id="start_point"></div>
+    <div class="col-sm-4"><strong>Start point: </strong></div>
+    <div class="" id="start_point"></div>
 </div>
 <div class="form-group" id="end_point_row">
-    <div class="col-sm-offset-2 col-sm-10">
-        <span class="text-danger small">{{ end_point_errors }}</span>
-    </div>
-    <label class="control-label col-sm-2">End point: </label>
-    <div class="col-sm-10" id="end_point"></div>
+    <div class="col-sm-4"><strong>End point: </strong></div>
+    <div class="" id="end_point"></div>
 </div>
 <div class="form-group" id="distance_row">
-    <div class="col-sm-offset-2 col-sm-10">
-        <span class="text-danger small">{{ distance_errors }}</span>
-    </div>
-    <label class="control-label col-sm-2">Distance: </label>
-    <div class="col-sm-10" id="distance"></div>
+    <div class="col-sm-4"><strong>Distance: </strong></div>
+    <div class="" id="distance"></div>
 </div>
 <div class="form-group" id="price_row">
-    <div class="col-sm-offset-2 col-sm-10">
-        <span class="text-danger small">{{ price_errors }}</span>
-    </div>
-    <label class="control-label col-sm-2">Price: </label>
-    <div class="col-sm-10" id="price"></div>
+    <div class="col-sm-4"><strong>Price: </strong></div>
+    <div class="" id="price"></div>
 </div>
-{% if error_message %}
-    <p><strong>{{ error_message }}</strong></p>
-{% endif %}
-<button type="submit" id="submit_button" class="btn btn-default btn-lg">
-  Create Route
-</button>
+
+<div class="col-sm-6 col-md-offset-3">
+    {% if error_message %}
+    <p style="color: red"><strong>{{ error_message }}</strong></p>
+    {% endif %}
+    <button type="submit" id="submit_button" class="btn btn-info btn-lg">
+      Edit
+    </button>
+</div>
+</div>
+
+
+
 </form>
-
-
+</div>
 
 <script>
 
@@ -96,8 +95,7 @@ function initMap() {
   var directionsService = new google.maps.DirectionsService;
   directionsDisplay = new google.maps.DirectionsRenderer;
   var map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 13,
-    center: {lat: 49.988922, lng: 36.233243}
+    zoom: 13
   });
 
   google.maps.event.addListener(map, 'click', function(event) {
@@ -113,7 +111,7 @@ function initMap() {
           });
         end_marker = new google.maps.Marker({
             position: {lat: parseFloat('{{ end_lat }}'), lng: parseFloat('{{ end_lng }}')},
-            label: 'A'
+            label: 'B'
           });
         directionsService.route({
                 origin: start_marker.position,
@@ -139,8 +137,8 @@ function initMap() {
                 document.getElementById("distance_row").style.visibility= "visible";
                 document.getElementById("price_row").style.visibility= "visible";
                 document.getElementById("end_point").innerHTML = end_address.substring(0,j);
-                document.getElementById("distance").innerHTML = response.routes[0].legs[0].distance.value;
-                document.getElementById("price").innerHTML = (response.routes[0].legs[0].distance.value/1000).toFixed(2);
+                document.getElementById("distance").innerHTML = response.routes[0].legs[0].distance.value + ' m';
+                document.getElementById("price").innerHTML = (response.routes[0].legs[0].distance.value/1000).toFixed(2) + ' $';
                 document.getElementById('end_point_input').value = end_address.substring(0,j) + '&' + end_marker.position.lat() + '&' + end_marker.position.lng();
                 document.getElementById('distance_input').value = response.routes[0].legs[0].distance.value;
                 document.getElementById('price_input').value = (response.routes[0].legs[0].distance.value/1000).toFixed(2);
@@ -165,7 +163,7 @@ function initMap() {
            directionsService.route({
                 origin: location,
                 destination: {lat: 50, lng: 36},
-                travelMode: google.maps.TravelMode.DRIVING
+                travelMode: google.maps.TravelMode.WALKING
           }, function(response, status) {
             if (status === google.maps.DirectionsStatus.OK) {
                 var address = response.routes[0].legs[0].start_address;
@@ -202,8 +200,8 @@ function initMap() {
                 document.getElementById("distance_row").style.visibility= "visible";
                 document.getElementById("price_row").style.visibility= "visible";
                 document.getElementById("end_point").innerHTML = address.substring(0,i);
-                document.getElementById("distance").innerHTML = response.routes[0].legs[0].distance.value;
-                document.getElementById("price").innerHTML = (response.routes[0].legs[0].distance.value/1000).toFixed(2);
+                document.getElementById("distance").innerHTML = response.routes[0].legs[0].distance.value + ' m';
+                document.getElementById("price").innerHTML = (response.routes[0].legs[0].distance.value/1000).toFixed(2) + ' $';
                 document.getElementById('end_point_input').value = address.substring(0,i) + '&' + location.lat() + '&' + location.lng();
                 document.getElementById('distance_input').value = response.routes[0].legs[0].distance.value;
                 document.getElementById('price_input').value = (response.routes[0].legs[0].distance.value/1000).toFixed(2);

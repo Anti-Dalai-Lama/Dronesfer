@@ -1,5 +1,4 @@
 .g-map{
-    width: 600px;
     height: 400px;
 }
 
@@ -9,4 +8,8 @@
 
 #start_point_row {
     visibility: hidden;
+}
+
+.login-div{
+    width: 500px !important;
 }

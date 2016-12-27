@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
+from django.utils import timezone
 
 # Create your models here.
 
@@ -30,6 +31,7 @@ class Route(models.Model):
     drone = models.ForeignKey(Drone, on_delete=models.CASCADE)
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     time = models.DateTimeField()
+    end_time = models.DateTimeField(default=timezone.now)
     distance = models.IntegerField(validators = [MinValueValidator(0.0)])
     start_point = models.OneToOneField(Location, related_name="start_point")
     end_point = models.OneToOneField(Location, related_name="end_point")

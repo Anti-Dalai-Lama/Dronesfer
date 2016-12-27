@@ -13,8 +13,8 @@
 <body>
     <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-12 col-md-7">
-            <div class="panel panel-default">
+        <div class="col-sm-12 col-md-3 col-md-offset-4">
+            <div class="panel panel-default" style="margin-top: 30%">
                 <div class="panel-body">
                     {% if error_message %}
                         <p><strong>{{ error_message }}</strong></p>
@@ -26,13 +26,13 @@
                                 <div class="col-sm-offset-2 col-sm-10">
                                     <span class="text-danger small">{{ field.errors }}</span>
                                 </div>
-                                <label class="control-label col-sm-2">{{ field.label_tag }}</label>
-                                <div class="col-sm-10">{{ field }}</div>
+                                <label class="control-label col-sm-4">{{ field.label_tag }}</label>
+                                <div class="col-sm-8">{{ field }}</div>
                             </div>
                         {% endfor %}
                         <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <button type="submit" class="btn btn-success">Register</button>
+                            <div class="col-sm-offset-5 col-sm-2">
+                                <button type="submit" class="btn btn-info">Register</button>
                             </div>
                         </div>
                     </form>

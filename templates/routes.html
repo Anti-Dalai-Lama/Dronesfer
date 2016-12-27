@@ -6,27 +6,65 @@
 {% block body %}
 
 {% if future_routes %}
-Future:
-    <ul>
-    {% for route in future_routes %}
-            <li><a href="{% url 'routes:detail' route.id %}">{{ route.load_title }}</a></li>
-    {% endfor %}
-</ul>
+<div class="row">
+    <div class="col-md-offset-2 col-md-8">
+        <h3>Future routes</h3>
 
-{% else %}
-
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Load</th>
+                    <th>Drone</th>
+                    <th>Start Time</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for route in future_routes %}
+                    <tr>
+                        <th><a href="{% url 'routes:detail' route.id %}">{{ route.load_title }}</a></th>
+                        <th>{{ route.drone }}</th>
+                        <th>{{ route.time |date:'H:i d.m.Y' }}</th>
+                        <th>{{ route.price }} $</th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endif %}
 
 
 
 {% if past_routes %}
-Past:
-    <ul>
-    {% for route in past_routes %}
-            <li><a href="{% url 'routes:detail' route.id %}">{{ route.load_title }}</a></li>
-    {% endfor %}
-</ul>
+    <div class="row">
+    <div class="col-md-offset-2 col-md-8">
+<h3>Past routes</h3>
 
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Load</th>
+                <th>Drone</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for route in past_routes %}
+                <tr>
+                    <th><a href="{% url 'routes:detail' route.id %}">{{ route.load_title }}</a></th>
+                    <th>{{ route.drone }}</th>
+                    <th>{{ route.time |date:'H:i d.m.Y' }}</th>
+                    <th>{{ route.end_time |date:'H:i d.m.Y' }}</th>
+                    <th>{{ route.price }} $</th>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
 {% else %}
 
 {% endif %}
