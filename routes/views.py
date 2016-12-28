@@ -77,7 +77,7 @@ class LoginView(View):
         else:
             return render(request, self.template_name, {'form': self.form_class(None)})
 
-
+@login_required()
 def detail(request, route_id):
     route = get_object_or_404(Route, pk=route_id)
     is_future = None
@@ -85,7 +85,7 @@ def detail(request, route_id):
         is_future = True
     return render(request, "detail.html", {"route": route, 'is_future':is_future})
 
-
+@login_required()
 def delete(request, route_id):
     Route.objects.filter(id = route_id).delete()
     return routes(request)
